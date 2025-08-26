@@ -18,9 +18,9 @@ function App() {
   // Initialize with sample data
   useEffect(() => {
     const sampleUsers = [
-      { id: 1, name: 'John Doe', email: 'john@example.com', phone: '+1234567890', role: 'admin' },
-      { id: 2, name: 'Jane Smith', email: 'jane@example.com', phone: '+1234567891', role: 'user' },
-      { id: 3, name: 'Bob Johnson', email: 'bob@example.com', phone: '+1234567892', role: 'user' }
+      { id: 1, name: 'Lalu', email: 'lalu@gmail.com', phone: '+1234567890', role: 'admin' },
+      { id: 2, name: 'namu', email: 'namu@gmail.com', phone: '+1234567891', role: 'user' },
+      { id: 3, name: 'Sam', email: 'Sam@gmail.com', phone: '+1234567892', role: 'user' }
     ]
     setUsers(sampleUsers)
   }, [])
@@ -99,11 +99,11 @@ function App() {
             <form onSubmit={handleSubmit} className="user-form">
               <div className="form-row">
                 <div className="form-group">
-                  <label htmlFor="name">Name</label>
+                  <label htmlFor="name">First Name</label>
                   <input
                     type="text"
                     id="name"
-                    name="name"
+                    name="first_names"
                     value={formData.name}
                     onChange={handleInputChange}
                     required
@@ -190,9 +190,6 @@ function App() {
             ) : (
               filteredUsers.map(user => (
                 <div key={user.id} className="user-card">
-                  <div className="user-avatar">
-                    {user.name.charAt(0).toUpperCase()}
-                  </div>
                   <div className="user-info">
                     <h3>{user.name}</h3>
                     <p className="user-email">{user.email}</p>
