@@ -149,9 +149,9 @@ export function AddUser() {
                             <td>{user.last_name}</td>
                             <td>{user.email}</td>
                             <td>{user.number}</td>
-                            <td><button onClick={() => handleEdit(user)}>Edit</button></td>
-                            <td> <button onClick={() => handleDelete(user.id)}>Delete</button></td>
-                            <td><button onClick={() => setSelectedUser(user)}>View</button></td>
+                            <td><button onClick={() => handleEdit(user)} className="btn text-green-500">Edit</button></td>
+                            <td> <button onClick={() => handleDelete(user.id)} className="btn text-green-500">Delete</button></td>
+                            <td><button onClick={() => setSelectedUser(user)} className="btn text-green-500">View</button></td>
                             </tr>
                         ))
                         ) : (
@@ -164,7 +164,7 @@ export function AddUser() {
                 {selectedUser && (
                     <UserDetails user={selectedUser} onClose={() => setSelectedUser(null)} />
                 )}
-                <button onClick={() => logout()}>logout</button>
+                <button onClick={() => logout()} className="btn">logout</button>
             </div>
     )
 }
