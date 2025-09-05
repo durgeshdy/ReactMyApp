@@ -103,7 +103,7 @@ function App() {
                   <input
                     type="text"
                     id="name"
-                    name="first_names"
+                    name="name"
                     value={formData.name}
                     onChange={handleInputChange}
                     required

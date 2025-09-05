@@ -10,7 +10,7 @@ export  function UserDetails({user, onClose}){
         <p><strong>Email:</strong> {user.email}</p>
         <p><strong>Number:</strong> {user.number}</p>
   
-        <button onClick={onClose}>Close</button>
+        <button onClick={onClose} className="btn">Close</button>
       </div>
     )
 }

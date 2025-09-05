@@ -128,6 +128,19 @@ body {
   gap: 8px;
 }
 
+.btn-view {
+  background: #464646;
+  color: #ffffff;
+}
+
+
+.btn-view:hover {
+  background: #4a4a4a;
+  transform: scale(1.1);
+  color: #ffffff;
+}
+
+
 .btn-primary {
   /* background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); */
   background-color: green;

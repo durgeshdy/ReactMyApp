@@ -10,6 +10,7 @@ import { Login } from './Test/Login'
 
 
 import { Routes, Route, Link } from "react-router-dom";
+import { UserList } from './Test/UserList'
 
 
 function App() {
@@ -31,6 +32,8 @@ function App() {
               <Link to="/about" className="nav-btn">About</Link>
               <Link to="/add-user" className="nav-btn">Add User</Link>
               <Link to="/crud" className="nav-btn">Crud</Link>
+              <Link to="/user-list" className="nav-btn">User List</Link>
+
             </header>
             <main className='main-wrapper'>
               <Routes>
@@ -38,6 +41,7 @@ function App() {
                 <Route path="/about" element={<About />} />
                 <Route path="/add-user" element={<AddUser />} />
                 <Route path="/crud" element={<Crud />} />
+                <Route path="/user-list" element={<UserList />} />
               </Routes>
             </main>
       </div>
