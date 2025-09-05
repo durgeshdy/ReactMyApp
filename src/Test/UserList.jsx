@@ -6,14 +6,16 @@ export function UserList() {
     const [isEditing, setIsEditing] = useState(false)
     const [selectedUser, setSelectedUser] = useState(null)
     const [showModal, setShowModal] = useState(false)
-    const [searchQuery, setSearchQuery] = useState(null)
+    const [searchQuery, setSearchQuery] = useState('')
     const [formData, setFormData] = useState({
         id: '',
         first_name: '',
         last_name: '',
         email: '',
-        number: ''
+        number: '',
+        profile_image: null
     })
+    const [imagePreview, setImagePreview] = useState(null);
     const handleDelete = (id) => {
         if (window.confirm('Are you sure you want to delete this user?')) {
             const updatedUsers = users.filter((user) => user.id !== id);
@@ -25,6 +27,11 @@ export function UserList() {
         setFormData(user);
         setIsEditing(true);
         setShowModal(true);
+        if (user.profile_image) {
+            setImagePreview(user.profile_image);
+        } else {
+            setImagePreview(null);
+        }
 
     }
 
@@ -36,6 +43,8 @@ export function UserList() {
             last_name: "",
             email: "",
             number: "",
+            profile_image: null
+
         });
     }
     const handleAddUser = () => {
@@ -45,10 +54,35 @@ export function UserList() {
             first_name: '',
             last_name: '',
             email: '',
-            number: ''
+            number: '',
+            profile_image: null
+
         });
         setShowModal(true);
     }
+    const handleImageUpload = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                const imageDataUrl = reader.result;
+                setFormData({
+                    ...formData,
+                    profile_image: imageDataUrl
+                });
+                setImagePreview(imageDataUrl);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+    const handleRemoveImage = () => {
+        setFormData({
+            ...formData,
+            profile_image: null
+        });
+        setImagePreview(null);
+    };
+
     const handleSubmit = (e) => {
         e.preventDefault()
         if (!isEditing) {
@@ -71,7 +105,8 @@ export function UserList() {
                 first_name: '',
                 last_name: '',
                 email: '',
-                number: ''
+                number: '',
+                profile_image: null
             })
         } else {
             const updatedUsers = users.map((user) =>
@@ -87,37 +122,48 @@ export function UserList() {
                 last_name: "",
                 email: "",
                 number: "",
+                profile_image: null
+
             });
         }
+        setImagePreview(null);
         setShowModal(false);
     }
 
-    const searchFilter = (searchQuery) => {
-        console.log('searchQuery',searchQuery);
-        if(searchQuery) {
-            const query = searchQuery.toLowerCase().trim();
-            const filteredData = users.filter((user) => 
-                user.first_name?.toLowerCase().includes(query) ||
-                user.last_name?.toLowerCase().includes(query) ||
-                user.email?.toLowerCase().includes(query)
-            );
-            setUsers(filteredData);
-        } else {
-            getAllUsers();
-        }
-    }
+    // const searchFilter = (searchQuery) => {
+    //     console.log('searchQuery',searchQuery);
+    //     if(searchQuery) {
+    //         const query = searchQuery.toLowerCase().trim();
+    //         const filteredData = users.filter((user) => 
+    //             user.first_name?.toLowerCase().includes(query) ||
+    //             user.last_name?.toLowerCase().includes(query) ||
+    //             user.email?.toLowerCase().includes(query)
+    //         );
+    //         setUsers(filteredData);
+    //     } else {
+    //         getAllUsers();
+    //     }
+    // }
     const handleInputChange = (e) => {
         setFormData({
             ...formData, [e.target.name]: e.target.value,
         })
     }
 
-    const getAllUsers = () =>{
-         const storedUsers = JSON.parse(localStorage.getItem("userData")) || [];
+    const getAllUsers = () => {
+        const storedUsers = JSON.parse(localStorage.getItem("userData")) || [];
         console.log('storedUsers', storedUsers);
         const sortedUsers = [...storedUsers].reverse();
         setUsers(sortedUsers);
     }
+
+    const query = searchQuery;
+    const filteredUsers = users.filter(user =>
+        user.first_name?.toLowerCase().includes(query) ||
+        user.last_name?.toLowerCase().includes(query) ||
+        user.email?.toLowerCase().includes(query) ||
+        user.number?.toLowerCase().includes(query)
+    )
 
     useEffect(() => {
         getAllUsers();
@@ -134,13 +180,14 @@ export function UserList() {
                 >
                     Add User
                 </button>
-                <input className="input" placeholder="Search" value={searchQuery} onChange={(e) => searchFilter(e.target.value)}/>
+                <input className="input" placeholder="Search" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
             </div>
 
             {/* Users Table */}
             <table className="table table-striped table-bordered">
                 <thead className="thead-dark">
                     <tr>
+                        <th>Profile</th>
                         <th>First Name</th>
                         <th>Last Name</th>
                         <th>Email</th>
@@ -149,9 +196,31 @@ export function UserList() {
                     </tr>
                 </thead>
                 <tbody>
-                    {users.length > 0 ? (
-                        users.map((user) => (
+                    {filteredUsers.length > 0 ? (
+                        filteredUsers.map((user) => (
                             <tr key={user.id}>
+                                 <td className="text-center">
+                                    {user.profile_image ? (
+                                        <img 
+                                            src={user.profile_image} 
+                                            alt="Profile" 
+                                            className="rounded-circle"
+                                            style={{ width: '50px', height: '50px', objectFit: 'cover' }}
+                                        />
+                                    ) : (
+                                        <div 
+                                            className="rounded-circle d-flex align-items-center justify-content-center mx-auto"
+                                            style={{ 
+                                                width: '50px', 
+                                                height: '50px', 
+                                                backgroundColor: '#f0f0f0',
+                                                color: '#999'
+                                            }}
+                                        >
+                                            No Image
+                                        </div>
+                                    )}
+                                </td>
                                 <td>{user.first_name}</td>
                                 <td>{user.last_name}</td>
                                 <td>{user.email}</td>
@@ -201,7 +270,27 @@ export function UserList() {
                                     <span>&times;</span>
                                 </button> */}
                             </div>
-                            <div className="modal-body">
+                            <div className="modal-body text-center">
+                                  {selectedUser.profile_image ? (
+                                    <img 
+                                        src={selectedUser.profile_image} 
+                                        alt="Profile" 
+                                        className="rounded-circle mb-3"
+                                        style={{ width: '120px', height: '120px', objectFit: 'cover' }}
+                                    />
+                                ) : (
+                                    <div 
+                                        className="rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3"
+                                        style={{ 
+                                            width: '120px', 
+                                            height: '120px', 
+                                            backgroundColor: '#f0f0f0',
+                                            color: '#999'
+                                        }}
+                                    >
+                                        No Image
+                                    </div>
+                                )}
                                 <p><strong>First Name:</strong> {selectedUser.first_name}</p>
                                 <p><strong>Last Name:</strong> {selectedUser.last_name}</p>
                                 <p><strong>Email:</strong> {selectedUser.email}</p>
@@ -223,59 +312,109 @@ export function UserList() {
                             <div className="modal-header">
                                 <h5 className="modal-title">{isEditing ? 'Edit User' : 'Add New User'}</h5>
                                 {/* <button type="button" className="close mx-2" onClick={handleCloseModal}> */}
-                                    {/* <span>&times;</span> */}
+                                {/* <span>&times;</span> */}
                                 {/* </button> */}
                             </div>
-                            <form onSubmit={handleSubmit}>
+                           <form onSubmit={handleSubmit}>
                                 <div className="modal-body">
-                                    <div className="form-group">
-                                        <label htmlFor="firstName">First Name:</label>
-                                        <input
-                                            type="text"
-                                            className="form-control"
-                                            id="firstName"
-                                            value={formData.first_name}
-                                            name="first_name"
-                                            onChange={handleInputChange}
-                                            required
-                                        />
-                                    </div>
-                                    <div className="form-group">
-                                        <label htmlFor="lastName">Last Name:</label>
-                                        <input
-                                            type="text"
-                                            className="form-control"
-                                            id="lastName"
-                                            value={formData.last_name}
-                                            name="last_name"
-                                            onChange={handleInputChange}
-                                            required
-                                        />
-                                    </div>
-                                    <div className="form-group">
-                                        <label htmlFor="email">Email:</label>
-                                        <input
-                                            type="email"
-                                            className="form-control"
-                                            id="email"
-                                            value={formData.email}
-                                            onChange={handleInputChange}
-                                            name="email"
-                                            required
-                                        />
-                                    </div>
-                                    <div className="form-group">
-                                        <label htmlFor="number">Phone Number:</label>
-                                        <input
-                                            className="form-control"
-                                            onChange={handleInputChange}
-                                            type="tel"
-                                            id="number"
-                                            value={formData.number}
-                                            name="number"
-                                            pattern="[0-9]{10}"
-                                            required
-                                        />
+                                    <div className="row">
+                                        <div className="col-md-4 text-center">
+                                            <div className="mb-3">
+                                                {imagePreview ? (
+                                                    <div className="position-relative d-inline-block">
+                                                        <img 
+                                                            src={imagePreview} 
+                                                            alt="Profile Preview" 
+                                                            className="rounded-circle"
+                                                            style={{ width: '150px', height: '150px', objectFit: 'cover' }}
+                                                        />
+                                                        <button
+                                                            type="button"
+                                                            className="btn btn-danger btn-sm position-absolute top-0 end-0 rounded-circle"
+                                                            onClick={handleRemoveImage}
+                                                            style={{ width: '30px', height: '30px' }}
+                                                        >
+                                                            ×
+                                                        </button>
+                                                    </div>
+                                                ) : (
+                                                    <div 
+                                                        className="rounded-circle d-flex align-items-center justify-content-center mx-auto mb-2"
+                                                        style={{ 
+                                                            width: '150px', 
+                                                            height: '150px', 
+                                                            backgroundColor: '#f0f0f0',
+                                                            color: '#999'
+                                                        }}
+                                                    >
+                                                        No Image
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <div className="mb-3">
+                                                <label htmlFor="profileImage" className="btn btn-outline-primary btn-sm">
+                                                    Upload Profile Image
+                                                </label>
+                                                <input
+                                                    type="file"
+                                                    id="profileImage"
+                                                    className="d-none"
+                                                    accept="image/*"
+                                                    onChange={handleImageUpload}
+                                                />
+                                            </div>
+                                        </div>
+                                        <div className="col-md-8">
+                                            <div className="form-group mb-3">
+                                                <label htmlFor="firstName">First Name:</label>
+                                                <input
+                                                    type="text"
+                                                    className="form-control"
+                                                    id="firstName"
+                                                    value={formData.first_name}
+                                                    name="first_name"
+                                                    onChange={handleInputChange}
+                                                    required
+                                                />
+                                            </div>
+                                            <div className="form-group mb-3">
+                                                <label htmlFor="lastName">Last Name:</label>
+                                                <input
+                                                    type="text"
+                                                    className="form-control"
+                                                    id="lastName"
+                                                    value={formData.last_name}
+                                                    name="last_name"
+                                                    onChange={handleInputChange}
+                                                    required
+                                                />
+                                            </div>
+                                            <div className="form-group mb-3">
+                                                <label htmlFor="email">Email:</label>
+                                                <input
+                                                    type="email"
+                                                    className="form-control"
+                                                    id="email"
+                                                    value={formData.email}
+                                                    onChange={handleInputChange}
+                                                    name="email"
+                                                    required
+                                                />
+                                            </div>
+                                            <div className="form-group mb-3">
+                                                <label htmlFor="number">Phone Number:</label>
+                                                <input
+                                                    className="form-control"
+                                                    onChange={handleInputChange}
+                                                    type="tel"
+                                                    id="number"
+                                                    value={formData.number}
+                                                    name="number"
+                                                    pattern="[0-9]{10}"
+                                                    required
+                                                />
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                                 <div className="modal-footer">
