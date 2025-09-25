@@ -84,6 +84,7 @@ export function AddUser() {
 
     const logout = () => {
         localStorage.removeItem("isLoggedIn");
+        localStorage.removeItem("role");
         window.location.reload();
     }
 

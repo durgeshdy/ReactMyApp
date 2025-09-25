@@ -1,4 +1,7 @@
 import { useState, useEffect } from "react"
+import { getItems } from '../apiService';
+import { toast } from "react-toastify";
+import Swal from "sweetalert2";
 
 
 export function UserList() {
@@ -16,13 +19,27 @@ export function UserList() {
         profile_image: null
     })
     const [imagePreview, setImagePreview] = useState(null);
-    const handleDelete = (id) => {
-        if (window.confirm('Are you sure you want to delete this user?')) {
-            const updatedUsers = users.filter((user) => user.id !== id);
-            localStorage.setItem("userData", JSON.stringify(updatedUsers));
-            setUsers(updatedUsers);
-        }
-    }
+
+    const handleDelete = (userId) => {
+        Swal.fire({
+            title: "Are you sure?",
+            text: "You want to delete this user!",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#3085d6",
+            cancelButtonColor: "#d33",
+            confirmButtonText: "Yes, delete it!"
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Perform delete logic
+                const updatedUsers = users.filter((user) => user.id !== userId);
+                localStorage.setItem("userData", JSON.stringify(updatedUsers));
+                setUsers(updatedUsers);
+                toast.success(`User has been deleted`);
+            }
+        });
+    };
+
     const handleEdit = (user) => {
         setFormData(user);
         setIsEditing(true);
@@ -44,7 +61,6 @@ export function UserList() {
             email: "",
             number: "",
             profile_image: null
-
         });
     }
     const handleAddUser = () => {
@@ -58,6 +74,7 @@ export function UserList() {
             profile_image: null
 
         });
+        setImagePreview(null);
         setShowModal(true);
     }
     const handleImageUpload = (e) => {
@@ -108,6 +125,7 @@ export function UserList() {
                 number: '',
                 profile_image: null
             })
+            toast.success(`User added successfully`);
         } else {
             const updatedUsers = users.map((user) =>
                 user.id === formData.id ? formData : user
@@ -125,6 +143,7 @@ export function UserList() {
                 profile_image: null
 
             });
+            toast.success(`User updated successfully`);
         }
         setImagePreview(null);
         setShowModal(false);
@@ -167,6 +186,9 @@ export function UserList() {
 
     useEffect(() => {
         getAllUsers();
+        getItems()
+            .then(response => console.log(response.data))
+            .catch(error => console.error('Error fetching items:', error));
     }, []);
     return (
         <div className="container mt-5 users-section">
@@ -199,20 +221,20 @@ export function UserList() {
                     {filteredUsers.length > 0 ? (
                         filteredUsers.map((user) => (
                             <tr key={user.id}>
-                                 <td className="text-center">
+                                <td className="text-center">
                                     {user.profile_image ? (
-                                        <img 
-                                            src={user.profile_image} 
-                                            alt="Profile" 
+                                        <img
+                                            src={user.profile_image}
+                                            alt="Profile"
                                             className="rounded-circle"
                                             style={{ width: '50px', height: '50px', objectFit: 'cover' }}
                                         />
                                     ) : (
-                                        <div 
+                                        <div
                                             className="rounded-circle d-flex align-items-center justify-content-center mx-auto"
-                                            style={{ 
-                                                width: '50px', 
-                                                height: '50px', 
+                                            style={{
+                                                width: '50px',
+                                                height: '50px',
                                                 backgroundColor: '#f0f0f0',
                                                 color: '#999'
                                             }}
@@ -271,19 +293,19 @@ export function UserList() {
                                 </button> */}
                             </div>
                             <div className="modal-body text-center">
-                                  {selectedUser.profile_image ? (
-                                    <img 
-                                        src={selectedUser.profile_image} 
-                                        alt="Profile" 
+                                {selectedUser.profile_image ? (
+                                    <img
+                                        src={selectedUser.profile_image}
+                                        alt="Profile"
                                         className="rounded-circle mb-3"
                                         style={{ width: '120px', height: '120px', objectFit: 'cover' }}
                                     />
                                 ) : (
-                                    <div 
+                                    <div
                                         className="rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3"
-                                        style={{ 
-                                            width: '120px', 
-                                            height: '120px', 
+                                        style={{
+                                            width: '120px',
+                                            height: '120px',
                                             backgroundColor: '#f0f0f0',
                                             color: '#999'
                                         }}
@@ -315,16 +337,16 @@ export function UserList() {
                                 {/* <span>&times;</span> */}
                                 {/* </button> */}
                             </div>
-                           <form onSubmit={handleSubmit}>
+                            <form onSubmit={handleSubmit}>
                                 <div className="modal-body">
                                     <div className="row">
                                         <div className="col-md-4 text-center">
                                             <div className="mb-3">
                                                 {imagePreview ? (
                                                     <div className="position-relative d-inline-block">
-                                                        <img 
-                                                            src={imagePreview} 
-                                                            alt="Profile Preview" 
+                                                        <img
+                                                            src={imagePreview}
+                                                            alt="Profile Preview"
                                                             className="rounded-circle"
                                                             style={{ width: '150px', height: '150px', objectFit: 'cover' }}
                                                         />
@@ -338,11 +360,11 @@ export function UserList() {
                                                         </button>
                                                     </div>
                                                 ) : (
-                                                    <div 
+                                                    <div
                                                         className="rounded-circle d-flex align-items-center justify-content-center mx-auto mb-2"
-                                                        style={{ 
-                                                            width: '150px', 
-                                                            height: '150px', 
+                                                        style={{
+                                                            width: '150px',
+                                                            height: '150px',
                                                             backgroundColor: '#f0f0f0',
                                                             color: '#999'
                                                         }}

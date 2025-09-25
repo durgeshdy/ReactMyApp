@@ -1,6 +1,10 @@
 import { useState } from "react"
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+
 
 export function Login({ onLogin }) {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     email: '',
     password: ''
@@ -11,11 +15,24 @@ export function Login({ onLogin }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    let role = null;
     if (formData.email === "admin@test.com" && formData.password === "123456") {
-      localStorage.setItem("isLoggedIn", "true"); // save session
-      onLogin();
+      role = "admin";
+    } else if (formData.email === "user@test.com" && formData.password === "123456") {
+      role = "user";
+    }
+
+    if (role) {
+      localStorage.setItem("isLoggedIn", "true");
+      localStorage.setItem("role", role);
+
+      // ✅ Pass role back to App state
+      onLogin?.(role);
+
+      toast.success(`Logged in successfully as ${role}`);
+      navigate(role === "admin" ? "/" : "/about"); // redirect admin to home, user to about
     } else {
-      alert("Invalid credentials!");
+      toast.error("Invalid credentials!");
     }
 
   }
