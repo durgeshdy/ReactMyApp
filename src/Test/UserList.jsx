@@ -2,6 +2,10 @@ import { useState, useEffect } from "react"
 import { getItems } from '../apiService';
 import { toast } from "react-toastify";
 import Swal from "sweetalert2";
+import { collection, addDoc, doc, setDoc, deleteDoc } from "firebase/firestore";
+import { db, auth } from "../firebase";
+import { createUserWithEmailAndPassword } from 'firebase/auth';
+
 
 
 export function UserList() {
@@ -31,7 +35,11 @@ export function UserList() {
             confirmButtonText: "Yes, delete it!"
         }).then((result) => {
             if (result.isConfirmed) {
-                // Perform delete logic
+                // Delete from Firestore
+                const userRef = doc(db, "ReactDemoUsers", userId.toString());
+                deleteDoc(userRef);
+
+                // Delete from localStorage
                 const updatedUsers = users.filter((user) => user.id !== userId);
                 localStorage.setItem("userData", JSON.stringify(updatedUsers));
                 setUsers(updatedUsers);
@@ -100,39 +108,72 @@ export function UserList() {
         setImagePreview(null);
     };
 
-    const handleSubmit = (e) => {
-        e.preventDefault()
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+
         if (!isEditing) {
             let existingUsers = JSON.parse(localStorage.getItem("userData"));
             if (!Array.isArray(existingUsers)) {
                 existingUsers = [];
             }
-            const newUser = {
-                ...formData, id: Date.now()
+
+            // Add user to Firestore first (Firestore generates ID)
+            try {
+                const role = "admin";
+                const docRef = await addDoc(collection(db, "ReactDemoUsers"), {
+                    ...formData,
+                    role: role,
+                });
+
+                const newUser = {
+                    ...formData,
+                    role: role,
+                    id: docRef.id, // ✅ store Firestore’s ID
+                };
+
+                // Update local storage
+                const updatedUsers = [...existingUsers, newUser];
+                localStorage.setItem("userData", JSON.stringify(updatedUsers));
+                setUsers(updatedUsers);
+
+                // Update Firestore doc with its ID
+                await setDoc(doc(db, "ReactDemoUsers", docRef.id), newUser);
+                await createUserWithEmailAndPassword(
+                    auth,
+                    formData.email,
+                    formData.email + 123
+                );
+
+                // Reset form
+                setFormData({
+                    id: "",
+                    first_name: "",
+                    last_name: "",
+                    email: "",
+                    number: "",
+                    profile_image: null,
+                });
+
+                toast.success(`User added successfully`);
+            } catch (err) {
+                console.error("Error adding user to Firestore:", err);
             }
-            const updatedUsers = [...existingUsers, newUser];
-            console.log("existingUsers:", existingUsers);
-            localStorage.setItem("userData", JSON.stringify(updatedUsers));
-
-            setUsers(updatedUsers);
-
-            // reset form
-            setFormData({
-                id: '',
-                first_name: '',
-                last_name: '',
-                email: '',
-                number: '',
-                profile_image: null
-            })
-            toast.success(`User added successfully`);
         } else {
             const updatedUsers = users.map((user) =>
                 user.id === formData.id ? formData : user
             );
             localStorage.setItem("userData", JSON.stringify(updatedUsers));
             setUsers(updatedUsers);
-            setIsEditing(false)
+            setIsEditing(false);
+
+            // Update Firestore user
+            try {
+                const userRef = doc(db, "ReactDemoUsers", formData.id);
+                await setDoc(userRef, formData, { merge: true });
+            } catch (err) {
+                console.error("Error updating user in Firestore:", err);
+            }
+
             // Reset form
             setFormData({
                 id: "",
@@ -140,14 +181,15 @@ export function UserList() {
                 last_name: "",
                 email: "",
                 number: "",
-                profile_image: null
-
+                profile_image: null,
             });
             toast.success(`User updated successfully`);
         }
+
         setImagePreview(null);
         setShowModal(false);
-    }
+    };
+
 
     // const searchFilter = (searchQuery) => {
     //     console.log('searchQuery',searchQuery);

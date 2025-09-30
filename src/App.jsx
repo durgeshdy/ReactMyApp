@@ -15,12 +15,12 @@ import "react-toastify/dist/ReactToastify.css";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 
-
-
-
 import { Routes, Route, Link } from "react-router-dom";
 import { UserList } from './Test/UserList'
-
+import { signOut } from 'firebase/auth';
+import ChatRoom from './Components/ChatRoom';
+import { AuthProvider } from './AuthContext';
+import { auth } from './firebase';
 
 function App() {
   const navigate = useNavigate();
@@ -41,12 +41,18 @@ function App() {
 
 
   const handleLogout = () => {
-    localStorage.removeItem("isLoggedIn");
-    localStorage.removeItem("role");
-    setIsLoggedIn(false);
-    setRole(null);
-    toast.success("Logged out successfully!");
-    navigate("/login");
+    try {
+      signOut(auth);
+      localStorage.removeItem("isLoggedIn");
+      localStorage.removeItem("role");
+      setIsLoggedIn(false);
+      setRole(null);
+      toast.success("Logged out successfully!");
+      navigate("/login");
+    }
+    catch (err) {
+      console.error(err);
+    }
   }
 
   if (loading) {
@@ -64,6 +70,7 @@ function App() {
           <header className='header-wrapper'>
             {role === "admin" && (
               <>
+              { <Link to="/chat" className="nav-btn">Chat</Link>}
                 <Link to="/" className="nav-btn">Home</Link>
                 <Link to="/about" className="nav-btn">About</Link>
                 <Link to="/add-user" className="nav-btn">Add User</Link>
@@ -91,6 +98,7 @@ function App() {
               </Route>
               {/* Admin Layout */}
               <Route element={<ProtectedLayout allowedRole="admin" Layout={AdminLayout} />}>
+                <Route path="/chat" element={<ChatRoom />} />
                 <Route path="/" element={<Home />} />
                 <Route path="/about" element={<About />} />
                 <Route path="/add-user" element={<AddUser />} />
