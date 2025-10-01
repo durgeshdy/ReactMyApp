@@ -20,6 +20,8 @@ export default function ChatRoom() {
   const [selectedUser, setSelectedUser] = useState(null);
   const [messages, setMessages] = useState([]);
   const [text, setText] = useState("");
+  const [searchQuery, setSearchQuery] = useState('')
+
   const dummy = useRef();
 
   // 🔹 Listen for auth state and fetch Firestore user
@@ -81,6 +83,14 @@ export default function ChatRoom() {
 
     fetchUsers();
   }, [user]);
+
+  const filteredUsers = users.filter(user =>
+    user.first_name?.toLowerCase().includes(searchQuery) ||
+    user.last_name?.toLowerCase().includes(searchQuery) ||
+    user.email?.toLowerCase().includes(searchQuery) ||
+    user.number?.toLowerCase().includes(searchQuery)
+  )
+
 
   // 🔹 Generate chat ID based on user IDs
   const getChatId = (id1, id2) => {
@@ -147,22 +157,30 @@ export default function ChatRoom() {
           padding: "10px",
         }}
       >
-        <h3>Users</h3>
-        {users.map((u) => (
-          <div
-            key={u.id}
-            onClick={() => setSelectedUser(u)}
-            style={{
-              padding: "8px",
-              margin: "5px 0",
-              cursor: "pointer",
-              background:
-                selectedUser?.id === u.id ? "#ddd" : "transparent",
-            }}
-          >
-            {u.email}
-          </div>
-        ))}
+        <h3>All Users</h3>
+        <input placeholder="Search" className="input" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
+        {filteredUsers.length > 0 ? (
+          filteredUsers.map((u) => (
+            <div
+              key={u.id}
+              onClick={() => setSelectedUser(u)}
+              style={{
+                padding: "8px",
+                margin: "5px 0",
+                cursor: "pointer",
+                background:
+                  selectedUser?.id === u.id ? "#ddd" : "transparent",
+              }}
+            >
+              {u.email}
+            </div>
+          ))
+        ) : (
+          <tr>
+            <td colSpan="5" className="text-center">No users found</td>
+          </tr>
+        )}
+
       </div>
 
       {/* Chat area */}
